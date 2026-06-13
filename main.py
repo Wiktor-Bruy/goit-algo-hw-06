@@ -13,7 +13,7 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, value):
-        if len(str(value)) != 10:
+        if len(str(value)) != 10 and str(value).isdigit():
             raise ValueError("The number must be 10 digits long.")
         super().__init__(value)
 
@@ -26,19 +26,21 @@ class Record:
         self.phones.append(Phone(phone))
 
     def remove_phone(self, phone):
-        self.phones.remove(Phone(phone))
+        old_p = self.find_phone(phone)
+        self.phones.remove(old_p)
 
     def edit_phone(self, old_p, new_p):
-        if len(old_p) != 10 or len(new_p) != 10:
+        phone = self.find_phone(old_p)
+        if not phone:
             raise ValueError("The number must be 10 digits long.")
-        i = self.phones.index(Phone(old_p))
-        self.phones[i] = Phone(new_p)
+        self.remove_phone(phone)
+        self.add_phone(new_p)
 
     def find_phone(self, phone):
-        i = self.phones.index(Phone(phone))
-        if i == -1:
-            return None
-        return self.phones[i]
+        for el in self.phones:
+            if el.value == phone:
+                return el
+        return None
 
     def __str__(self):
         return f"Contact name: {self.name.value}, phones: {'; '.join(p.value for p in self.phones)}"
@@ -51,10 +53,7 @@ class AddressBook(UserDict):
         self.data[record.name.value] = record
 
     def find(self, name):
-        if name in self.data:
-            return self.data[name]
-        else:
-            return None
+        return self.data.get(name)
 
     def delete(self, name):
         self.data.pop(name)
